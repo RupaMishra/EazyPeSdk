@@ -3,6 +3,7 @@ package com.example.easypepg;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -17,10 +18,13 @@ import androidx.core.view.WindowInsetsCompat;
 import com.example.easypepg.databinding.ActivityEasePePgBinding;
 import com.example.easypepg.utility.CustomWebViewClient;
 
+import java.security.MessageDigest;
+
 public class EasePePg extends AppCompatActivity {
 
     private WebView webView;
     ActivityEasePePgBinding binding;
+    final String TAG = "ENCODING";
     String pay_id=null ,
             order_id=null,
             amount=null ,
@@ -32,6 +36,7 @@ public class EasePePg extends AppCompatActivity {
             cust_email=null ,
             product_desc=null ,
             currency_code=null ,
+            salt=null ,
             return_url=null ;
     @SuppressLint("SetJavaScriptEnabled")
     @Override
@@ -62,6 +67,7 @@ public class EasePePg extends AppCompatActivity {
             product_desc = extras.getString("product_desc");
             currency_code = extras.getString("currency_code");
             return_url = extras.getString("return_url");
+            salt = extras.getString("salt");
 
         }else{
             Toast.makeText(this, "Please Enter Data Correctly", Toast.LENGTH_SHORT).show();
@@ -75,11 +81,27 @@ public class EasePePg extends AppCompatActivity {
         webView.getSettings().setJavaScriptEnabled(true);
         webView.setWebContentsDebuggingEnabled(true);
         webView.setWebViewClient(new CustomWebViewClient());
-//        loadWebView();
         startTxn();
     }
 
     void startTxn(){
+        if(!pay_id.equals(null)||
+                !order_id.equals(null)||
+                !amount.equals(null)||
+                !txntype.equals(null)||
+                !cust_name.equals(null)||
+                !cust_street_addresss1.equals(null)||
+                !cust_zip.equals(null)||
+                !cust_phone.equals(null)||
+                !cust_email.equals(null)||
+                !product_desc.equals(null)||
+                !currency_code.equals(null)||
+                !return_url.equals(null)||
+                !salt.equals(null)){
+
+        String hashString = "AMOUNT="+amount+"~CURRENCY_CODE="+currency_code+"~CUST_EMAIL="+cust_email+"~CUST_NAME="+cust_name+"~CUST_PHONE="+cust_phone+"~CUST_STREET_ADDRESS1="+cust_street_addresss1+"~CUST_ZIP="+cust_zip+"~ORDER_ID="+order_id+"~PAY_ID="+pay_id+"~PRODUCT_DESC="+product_desc+"~RETURN_URL="+return_url+"~TXNTYPE="+txntype+salt;
+        String generatedHash = sha256(hashString);
+
         String htmlViewString = "<html>\n" +
                 "<head>\n" +
                 "<title>Test</title>\n" +
@@ -100,11 +122,33 @@ public class EasePePg extends AppCompatActivity {
                 "<input type=\"hidden\" name=\"CURRENCY_CODE\" value=\""+currency_code+"\"/> \n" +
                 "<input type=\"hidden\" name=\"RETURN_URL\" value=\""+return_url+"\"/> \n" +
                 "<input type=\"hidden\" name=\"HASH\" \n" +
-                "value=\"d2ec9f146c6e802cc54577b06358860687a199679b552341c1c495110f1cb3eb\"/> \n" +
+                "value=\""+generatedHash+"\"/> \n" +
                 "<input type=\"submit\" value=\"Click to Pay\"/> \n" +
                 "</form>\n" +
                 "</body>\n" +
                 "</html>";
         webView.loadDataWithBaseURL(null, htmlViewString, "text/html", "utf-8", null);
+        }else {
+            Toast.makeText(this, "Please Enter Data Correctly", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    public String sha256(final String base) {
+        try{
+            final MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            final byte[] hash = digest.digest(base.getBytes("UTF-8"));
+            final StringBuilder hexString = new StringBuilder();
+            for (int i = 0; i < hash.length; i++) {
+                final String hex = Integer.toHexString(0xff & hash[i]);
+                if(hex.length() == 1)
+                    hexString.append('0');
+                hexString.append(hex);
+            }
+//            System.out.println();
+//            Log.d(TAG, "sha256: "+hexString.toString());
+            return hexString.toString();
+        } catch(Exception ex){
+            throw new RuntimeException(ex);
+        }
     }
 }

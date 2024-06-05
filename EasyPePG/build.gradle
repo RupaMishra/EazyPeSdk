@@ -40,7 +40,7 @@ publishing {
         maven(MavenPublication) {
             groupId = 'com.github.RupaMishra'
             artifactId = 'EazyPeSdk'
-            version = "1.0"
+            version = "1.1"
             pom {
                 description = 'Payment Gateway SDK'
             }
