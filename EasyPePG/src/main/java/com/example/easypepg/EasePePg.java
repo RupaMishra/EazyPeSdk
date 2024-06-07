@@ -46,7 +46,8 @@ public class EasePePg extends AppCompatActivity {
     private WebView webView;
     ActivityEasePePgBinding binding;
     private String TAG = "PAYMENT_GATEWAY";
-
+    private static final String URL = "https://pg.eazype.co/pgui/jsp/paymentrequest";
+    private static final String txnFailed = "https://pg.eazype.co/pgui/jsp/txncancel";
     String pay_id=null ,
             order_id=null,
             amount=null ,
@@ -67,6 +68,9 @@ public class EasePePg extends AppCompatActivity {
         binding = ActivityEasePePgBinding.inflate(getLayoutInflater());
         EdgeToEdge.enable(this);
         setContentView(binding.getRoot());
+        if(getSupportActionBar()!=null) {
+            getSupportActionBar().hide();
+        }
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
@@ -115,6 +119,14 @@ public class EasePePg extends AppCompatActivity {
                     Log.d(TAG, "shouldOverrideUrlLoading: true");
                     return true;
                 }
+                if(url.startsWith(txnFailed)){
+                    binding.webview.setVisibility(View.GONE);
+                    try {
+                        handleReturnUrl(url);
+                    } catch (JSONException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
                 return false;
             }
 
@@ -123,20 +135,28 @@ public class EasePePg extends AppCompatActivity {
                 super.onPageFinished(view, url);
                 Log.d(TAG, "onPageFinished: "+url);
                 Log.d(TAG, "onPageFinished: ");
-                view.loadUrl("javascript:window.Android.processHTML(document.documentElement.outerHTML);");
+//                view.loadUrl("javascript:window.Android.processHTML(document.documentElement.outerHTML);");
+                if (url.startsWith(URL)) {
+                    try {
+                        binding.webview.setVisibility(View.GONE);
+                        handleReturnUrl(url);
+                    } catch (JSONException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
             }
 
             @Override
             public void onPageStarted(WebView view, String url, Bitmap favicon) {
                 super.onPageStarted(view, url, favicon);
                 Log.d(TAG, "onPageStarted: "+url);
-                if (url.startsWith(return_url)) {
-                    try {
-                        handleReturnUrl(url);
-                    } catch (JSONException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
+//                if (url.startsWith(return_url)) {
+//                    try {
+//                        handleReturnUrl(url);
+//                    } catch (JSONException e) {
+//                        throw new RuntimeException(e);
+//                    }
+//                }
             }
             @RequiresApi(api = Build.VERSION_CODES.TIRAMISU)
             @Override
@@ -253,6 +273,7 @@ public class EasePePg extends AppCompatActivity {
 
         sdkData.setHASH(generatedHash);
 
+        binding.progressLayout.progressRL.setVisibility(View.VISIBLE);
         Call<ResponseBody> call = getDataService.checkStatus(sdkData);
         call.enqueue(new Callback<ResponseBody>() {
             @Override
@@ -283,11 +304,11 @@ public class EasePePg extends AppCompatActivity {
                     intent.putExtra("HASH",responseData.getHASH());
                     intent.putExtra("amount",(Integer.parseInt(amount)/100)+"");
                     startActivity(intent);
-
                 } else {
                     // Handle error response
-                    Toast.makeText(EasePePg.this, "Somthing went wrong: "+ response.code(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(EasePePg.this, "Something went wrong: "+ response.code(), Toast.LENGTH_SHORT).show();
                 }
+                binding.progressLayout.progressRL.setVisibility(View.GONE);
             }
 
             @Override
@@ -295,7 +316,7 @@ public class EasePePg extends AppCompatActivity {
                 // Handle request failure
                 Log.d(TAG, "onFailure: "+t.getMessage());
                 Toast.makeText(EasePePg.this, "Somthing went wrong: "+ t.getMessage(), Toast.LENGTH_SHORT).show();
-
+                binding.progressLayout.progressRL.setVisibility(View.GONE);
             }
         });
     }

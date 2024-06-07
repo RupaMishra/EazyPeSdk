@@ -28,7 +28,7 @@ public class MainActivity extends AppCompatActivity {
 
         Intent intent = new Intent(MainActivity.this, EasePePg.class);
         intent.putExtra("pay_id","1224120718175615");
-        intent.putExtra("order_id","Test9294");
+        intent.putExtra("order_id","Test8394");
         intent.putExtra("amount","100");
         intent.putExtra("txntype","SALE");
         intent.putExtra("cust_name","Demo");
