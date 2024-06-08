@@ -28,7 +28,7 @@ public class MainActivity extends AppCompatActivity {
 
         Intent intent = new Intent(MainActivity.this, EasePePg.class);
         intent.putExtra("pay_id","1224120718175615");
-        intent.putExtra("order_id","Test8394");
+        intent.putExtra("order_id","Test84645");
         intent.putExtra("amount","100");
         intent.putExtra("txntype","SALE");
         intent.putExtra("cust_name","Demo");
@@ -38,7 +38,7 @@ public class MainActivity extends AppCompatActivity {
         intent.putExtra("cust_email","rm@gmail.com");
         intent.putExtra("product_desc","CD Player");
         intent.putExtra("currency_code","356");
-        intent.putExtra("salt","3681f2af3f9e415b");
+        intent.putExtra("hash","09a9fc2cb4956fb34a62db016d95a49ce66d5600f1025faafe22cbc1d245a08c");
         intent.putExtra("return_url","https://apiuat.acepy.in/test");
         startActivity(intent);
 

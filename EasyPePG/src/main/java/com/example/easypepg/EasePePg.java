@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 import android.webkit.JavascriptInterface;
@@ -53,13 +54,13 @@ public class EasePePg extends AppCompatActivity {
             amount=null ,
             txntype=null,
             cust_name=null ,
-            cust_street_addresss1=null ,
+            cust_street_address1=null ,
             cust_zip=null ,
             cust_phone=null ,
             cust_email=null ,
             product_desc=null ,
             currency_code=null ,
-            salt=null ,
+            hash=null ,
             return_url=null ;
     @SuppressLint("SetJavaScriptEnabled")
     @Override
@@ -86,14 +87,14 @@ public class EasePePg extends AppCompatActivity {
             amount = extras.getString("amount");
             txntype = extras.getString("txntype");
             cust_name = extras.getString("cust_name");
-            cust_street_addresss1 = extras.getString("cust_street_addresss1");
+            cust_street_address1 = extras.getString("cust_street_address1");
             cust_zip = extras.getString("cust_zip");
             cust_phone = extras.getString("cust_phone");
             cust_email = extras.getString("cust_email");
             product_desc = extras.getString("product_desc");
             currency_code = extras.getString("currency_code");
             return_url = extras.getString("return_url");
-            salt = extras.getString("salt");
+            hash = extras.getString("hash");
 
         }else{
             Toast.makeText(this, "Please Enter Data Correctly", Toast.LENGTH_SHORT).show();
@@ -120,12 +121,18 @@ public class EasePePg extends AppCompatActivity {
                     return true;
                 }
                 if(url.startsWith(txnFailed)){
-                    binding.webview.setVisibility(View.GONE);
-                    try {
-                        handleReturnUrl(url);
-                    } catch (JSONException e) {
-                        throw new RuntimeException(e);
-                    }
+                    new Handler().postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            finish();
+                        }
+                    }, 10000);
+//                    binding.webview.setVisibility(View.GONE);
+//                    try {
+//                        handleReturnUrl(url);
+//                    } catch (JSONException e) {
+//                        throw new RuntimeException(e);
+//                    }
                 }
                 return false;
             }
@@ -137,12 +144,18 @@ public class EasePePg extends AppCompatActivity {
                 Log.d(TAG, "onPageFinished: ");
 //                view.loadUrl("javascript:window.Android.processHTML(document.documentElement.outerHTML);");
                 if (url.startsWith(URL)) {
-                    try {
-                        binding.webview.setVisibility(View.GONE);
-                        handleReturnUrl(url);
-                    } catch (JSONException e) {
-                        throw new RuntimeException(e);
-                    }
+                    new Handler().postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            finish();
+                        }
+                    }, 60000);
+//                    try {
+//                        binding.webview.setVisibility(View.GONE);
+//                        handleReturnUrl(url);
+//                    } catch (JSONException e) {
+//                        throw new RuntimeException(e);
+//                    }
                 }
             }
 
@@ -175,7 +188,6 @@ public class EasePePg extends AppCompatActivity {
                 }
             }
         });
-
         startTxn();
     }
 
@@ -185,17 +197,18 @@ public class EasePePg extends AppCompatActivity {
                 !amount.equals(null)||
                 !txntype.equals(null)||
                 !cust_name.equals(null)||
-                !cust_street_addresss1.equals(null)||
+                !cust_street_address1.equals(null)||
                 !cust_zip.equals(null)||
                 !cust_phone.equals(null)||
                 !cust_email.equals(null)||
                 !product_desc.equals(null)||
                 !currency_code.equals(null)||
                 !return_url.equals(null)||
-                !salt.equals(null)){
+                !hash.equals(null)){
 
-        String hashString = "AMOUNT="+amount+"~CURRENCY_CODE="+currency_code+"~CUST_EMAIL="+cust_email+"~CUST_NAME="+cust_name+"~CUST_PHONE="+cust_phone+"~CUST_STREET_ADDRESS1="+cust_street_addresss1+"~CUST_ZIP="+cust_zip+"~ORDER_ID="+order_id+"~PAY_ID="+pay_id+"~PRODUCT_DESC="+product_desc+"~RETURN_URL="+return_url+"~TXNTYPE="+txntype+salt;
-        String generatedHash = sha256(hashString);
+//        String hashString = "AMOUNT="+amount+"~CURRENCY_CODE="+currency_code+"~CUST_EMAIL="+cust_email+"~CUST_NAME="+cust_name+"~CUST_PHONE="+cust_phone+"~CUST_STREET_ADDRESS1="+cust_street_address1+"~CUST_ZIP="+cust_zip+"~ORDER_ID="+order_id+"~PAY_ID="+pay_id+"~PRODUCT_DESC="+product_desc+"~RETURN_URL="+return_url+"~TXNTYPE="+txntype+"~Hash="+hash;
+//            Log.d(TAG, "startTxn: string:- "+hashString);
+        //        String generatedHash = sha256(hashString);
 
             String htmlViewString = "<html>\n" +
                     "<head>\n" +
@@ -213,14 +226,14 @@ public class EasePePg extends AppCompatActivity {
                     "<input type=\"hidden\" name=\"AMOUNT\" value=\""+amount+"\"/> \n" +
                     "<input type=\"hidden\" name=\"TXNTYPE\" value=\""+txntype+"\"/> \n" +
                     "<input type=\"hidden\" name=\"CUST_NAME\" value=\""+cust_name+"\"/> \n" +
-                    "<input type=\"hidden\" name=\"CUST_STREET_ADDRESS1\" value=\""+cust_street_addresss1+"\"/> \n" +
+                    "<input type=\"hidden\" name=\"CUST_STREET_ADDRESS1\" value=\""+cust_street_address1+"\"/> \n" +
                     "<input type=\"hidden\" name=\"CUST_ZIP\" value=\""+cust_zip+"\"/> \n" +
                     "<input type=\"hidden\" name=\"CUST_PHONE\" value=\""+cust_phone+"\"/> \n" +
                     "<input type=\"hidden\" name=\"CUST_EMAIL\" value=\""+cust_email+"\"/> \n" +
                     "<input type=\"hidden\" name=\"PRODUCT_DESC\" value=\""+product_desc+"\"/> \n" +
                     "<input type=\"hidden\" name=\"CURRENCY_CODE\" value=\""+currency_code+"\"/> \n" +
                     "<input type=\"hidden\" name=\"RETURN_URL\" value=\""+return_url+"\"/> \n" +
-                    "<input type=\"hidden\" name=\"HASH\" value=\""+generatedHash+"\"/> \n" +
+                    "<input type=\"hidden\" name=\"HASH\" value=\""+hash+"\"/> \n" +
                     "</form>\n" +
                     "</body>\n" +
                     "</html>";
@@ -268,10 +281,10 @@ public class EasePePg extends AppCompatActivity {
         sdkData.setORDER_ID(order_id);
         sdkData.setPAY_ID(pay_id);
         sdkData.setTXNTYPE(txntype);
-        String hashString = "AMOUNT="+amount+"~CURRENCY_CODE="+currency_code+"~ORDER_ID="+order_id+"~PAY_ID="+pay_id+"~TXNTYPE="+txntype+salt;
-        String generatedHash = sha256(hashString);
+//        String hashString = "AMOUNT="+amount+"~CURRENCY_CODE="+currency_code+"~ORDER_ID="+order_id+"~PAY_ID="+pay_id+"~TXNTYPE="+txntype+salt;
+//        String generatedHash = sha256(hashString);
 
-        sdkData.setHASH(generatedHash);
+//        sdkData.setHASH(generatedHash);
 
         binding.progressLayout.progressRL.setVisibility(View.VISIBLE);
         Call<ResponseBody> call = getDataService.checkStatus(sdkData);
